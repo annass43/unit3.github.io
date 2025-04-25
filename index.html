@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2013-2022年中国在共建国家主要投资领域占比</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .title-container {
+            color: #333;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 20px;
+            margin: 0;
+            color: #333;
+        }
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 30px;
+            padding: 15px;
+        }
+        .source {
+            text-align: left;
+            color: #666;
+            font-size: 12px;
+            margin-top: 10px;
+            margin-left: 5px;
+        }
+        
+        /* 响应式设计样式 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            .chart-container {
+                height: 400px;
+                padding: 10px;
+            }
+            h1 {
+                font-size: 18px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            .chart-container {
+                height: 350px;
+                padding: 5px;
+                margin-bottom: 20px;
+            }
+            h1 {
+                font-size: 16px;
+            }
+            .title-container {
+                padding: 5px;
+                margin-bottom: 15px;
+            }
+            .source {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title-container">
+            <h1>2013—2022年中国在共建国家主要投资领域 (%)</h1>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="investmentChart"></canvas>
+            <div class="source">数据来源: AEI，中国银行研究院</div>
+        </div>
+    </div>
+
+    <script>
+        // 投资领域数据
+        const investmentData = {
+            '能源': 39.0,
+            '交通': 24.4,
+            '金属': 8.8,
+            '公共服务': 3.0,
+            '物流': 2.6,
+            '化学品': 2.2,
+            '金融': 2.0,
+            '其他': 10.7
+        };
+        
+        // 根据原图调整颜色，使用更柔和的配色
+        const colors = {
+            '能源': 'rgba(100, 149, 237, 0.7)',   // 淡矢车菊蓝
+            '交通': 'rgba(240, 128, 60, 0.7)',    // 淡橙色
+            '金属': 'rgba(180, 180, 180, 0.7)',   // 淡灰色
+            '公共服务': 'rgba(240, 200, 80, 0.7)', // 淡黄色
+            '物流': 'rgba(110, 180, 130, 0.7)',   // 淡绿色
+            '化学品': 'rgba(95, 158, 209, 0.7)',   // 淡蓝色
+            '金融': 'rgba(180, 130, 190, 0.7)',   // 淡紫色
+            '其他': 'rgba(187, 106, 95, 0.7)'     // 淡红棕色
+        };
+        
+        // 图表实例
+        let myChart;
+        
+        // 初始化图表
+        function initChart() {
+            const ctx = document.getElementById('investmentChart').getContext('2d');
+            
+            // 注册数据标签插件
+            Chart.register(ChartDataLabels);
+            
+            // 准备数据
+            const labels = Object.keys(investmentData);
+            const data = Object.values(investmentData);
+            const backgroundColors = labels.map(field => colors[field]);
+            
+            // 获取当前视口宽度
+            const windowWidth = window.innerWidth;
+            
+            // 根据屏幕宽度调整配置
+            const fontSize = windowWidth < 480 ? 10 : windowWidth < 768 ? 12 : 14;
+            const strokeWidth = windowWidth < 480 ? 1 : 2;
+            const borderWidth = windowWidth < 480 ? 1 : 2;
+            const padding = windowWidth < 480 ? 30 : windowWidth < 768 ? 40 : 50;
+            const radius = windowWidth < 480 ? '75%' : windowWidth < 768 ? '80%' : '85%';
+            const labelOffset = windowWidth < 480 ? 15 : 20;
+            
+            // 创建饼图
+            if (myChart) {
+                myChart.destroy();
+            }
+            
+            myChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: 'white',
+                        borderWidth: borderWidth,
+                        hoverBorderColor: 'white',
+                        hoverBorderWidth: borderWidth + 1,
+                        hoverOffset: windowWidth < 480 ? 5 : 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            top: padding,
+                            right: padding,
+                            bottom: padding,
+                            left: padding
+                        }
+                    },
+                    cutout: '0%',  // 实心饼图
+                    radius: radius,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            titleFont: {
+                                size: fontSize,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: fontSize
+                            },
+                            padding: windowWidth < 480 ? 8 : 12,
+                            cornerRadius: 6,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    return `${label}: ${value}%`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            formatter: (value, ctx) => {
+                                const label = ctx.chart.data.labels[ctx.dataIndex];
+                                return windowWidth < 480 && value < 5 ? value : `${label}, ${value}`;
+                            },
+                            color: function(context) {
+                                // 对于小扇区使用连线和外部标签
+                                if (context.dataset.data[context.dataIndex] < 10) {
+                                    return 'black';
+                                }
+                                // 对于大扇区直接在内部显示白色标签
+                                return 'white';
+                            },
+                            backgroundColor: function(context) {
+                                // 对于小扇区添加背景色
+                                if (context.dataset.data[context.dataIndex] < 10) {
+                                    return 'rgba(255, 255, 255, 0.7)';
+                                }
+                                return null;
+                            },
+                            borderRadius: 4,
+                            borderWidth: 1,
+                            borderColor: function(context) {
+                                if (context.dataset.data[context.dataIndex] < 10) {
+                                    return 'rgba(0, 0, 0, 0.1)';
+                                }
+                                return null;
+                            },
+                            padding: {
+                                top: 4,
+                                right: 6,
+                                bottom: 4,
+                                left: 6
+                            },
+                            // 调整标签位置
+                            anchor: function(context) {
+                                if (context.dataset.data[context.dataIndex] < 10) {
+                                    return 'end';
+                                }
+                                return 'center';
+                            },
+                            align: function(context) {
+                                if (context.dataset.data[context.dataIndex] < 10) {
+                                    return 'end';
+                                }
+                                return 'center';
+                            },
+                            offset: function(context) {
+                                if (context.dataset.data[context.dataIndex] < 10) {
+                                    return labelOffset;
+                                }
+                                return 0;
+                            },
+                            font: {
+                                weight: 'bold',
+                                size: function(context) {
+                                    const value = context.dataset.data[context.dataIndex];
+                                    if (value < 10) {
+                                        return windowWidth < 480 ? 10 : windowWidth < 768 ? 11 : 12;
+                                    }
+                                    return windowWidth < 480 ? 11 : windowWidth < 768 ? 12 : 14;
+                                }
+                            },
+                            textStrokeColor: function(context) {
+                                if (context.dataset.data[context.dataIndex] < 10) {
+                                    return null;
+                                }
+                                return 'rgba(0, 0, 0, 0.3)';
+                            },
+                            textStrokeWidth: strokeWidth,
+                            // 为小扇区添加连线
+                            listeners: {
+                                draw: function(context) {
+                                    if (context.dataset.data[context.dataIndex] < 10) {
+                                        const {ctx, chartArea} = context.chart;
+                                        const meta = context.chart.getDatasetMeta(0);
+                                        const arc = meta.data[context.dataIndex];
+                                        
+                                        // 计算线的起始点和终点
+                                        const center = {
+                                            x: (chartArea.left + chartArea.right) / 2,
+                                            y: (chartArea.top + chartArea.bottom) / 2
+                                        };
+                                        
+                                        // 扇形中点角度
+                                        const angle = Math.PI / 2 - (arc.startAngle + arc.endAngle) / 2;
+                                        
+                                        // 线的起点（扇形边缘）
+                                        const startPoint = {
+                                            x: center.x + Math.cos(angle) * arc.outerRadius,
+                                            y: center.y - Math.sin(angle) * arc.outerRadius
+                                        };
+                                        
+                                        // 线的终点（标签位置附近）
+                                        const endPoint = {
+                                            x: center.x + Math.cos(angle) * (arc.outerRadius + labelOffset),
+                                            y: center.y - Math.sin(angle) * (arc.outerRadius + labelOffset)
+                                        };
+                                        
+                                        // 绘制连线
+                                        ctx.beginPath();
+                                        ctx.moveTo(startPoint.x, startPoint.y);
+                                        ctx.lineTo(endPoint.x, endPoint.y);
+                                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+                                        ctx.lineWidth = 1;
+                                        ctx.stroke();
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true,
+                        duration: windowWidth < 480 ? 1000 : 1500
+                    }
+                }
+            });
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+        });
+        
+        // 添加窗口大小变化监听
+        window.addEventListener('resize', function() {
+            // 延迟执行以避免频繁重绘
+            if (this.resizeTimer) {
+                clearTimeout(this.resizeTimer);
+            }
+            this.resizeTimer = setTimeout(function() {
+                initChart();
+            }, 200);
+        });
+    </script>
+</body>
+</html>
